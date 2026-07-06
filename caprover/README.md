@@ -20,7 +20,7 @@ This directory contains the first-pass CapRover adaptation for evaluating `remp2
 | `st-remp-sso` | `caprover/apps/st-remp-sso/captain-definition` | no/limited | PHP-FPM for SSO. |
 | `st-remp-tracker` | `caprover/apps/st-remp-tracker/captain-definition` | optional | Go tracker API, only expose if testing collection. |
 | `st-remp-segments` | `caprover/apps/st-remp-segments/captain-definition` | no | Go segments API. |
-| `st-remp-mysql` | `caprover/apps/st-remp-mysql/captain-definition` | no | Needs persistent volume `/var/lib/mysql`; set strong `MYSQL_ROOT_PASSWORD`. |
+| `st-remp-mysql` | `caprover/apps/st-remp-mysql/captain-definition` | no | Uses official `mysql:8.0`; needs persistent volume `/var/lib/mysql`, strong `MYSQL_ROOT_PASSWORD`, and manual bootstrap SQL. |
 | `st-remp-redis` | `caprover/apps/st-remp-redis/captain-definition` | no | Needs persistent volume `/data` if state persistence is desired. |
 | `st-remp-elasticsearch` | `caprover/apps/st-remp-elasticsearch/captain-definition` | no | Needs persistent volume `/usr/share/elasticsearch/data`; do not expose directly. |
 | `st-remp-zookeeper` | `caprover/apps/st-remp-zookeeper/captain-definition` | no | Internal Kafka dependency. |
@@ -36,6 +36,24 @@ This directory contains the first-pass CapRover adaptation for evaluating `remp2
 3. Do not expose MySQL, Redis, Kafka, Zookeeper, Elasticsearch, Adminer, Mailhog, or Kibana publicly without explicit protection.
 4. Keep deployment branch isolated (`caprover/nucleo-staging`) until the team approves a final deployment model.
 5. The PHP entrypoint supports optional migrations via `REMP_RUN_MIGRATIONS=true`; keep it `false` until database credentials, backups and rollback are defined.
+6. The MySQL app intentionally uses the official `mysql:8.0` image. After the database app is running, bootstrap the required REMP databases manually with `caprover/bootstrap/mysql-init.sql` instead of maintaining a custom MySQL image.
+
+## Manual MySQL bootstrap
+
+After creating `st-remp-mysql` with the official image and a persistent `/var/lib/mysql` volume, run the SQL in:
+
+```txt
+caprover/bootstrap/mysql-init.sql
+```
+
+The script only creates the required databases:
+
+- `beam`
+- `campaign`
+- `mailer`
+- `sso`
+
+Do not commit real MySQL passwords or user credentials. Keep those in CapRover env vars / operational notes.
 
 ## Required env adjustments for staging
 
