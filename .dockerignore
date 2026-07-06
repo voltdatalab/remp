@@ -1,0 +1,17 @@
+.git
+.gitlab-ci.yml
+**/.git
+**/.DS_Store
+**/node_modules
+**/vendor
+**/.env
+**/.env.local
+**/storage/logs/*
+**/storage/framework/cache/*
+**/storage/framework/sessions/*
+**/storage/framework/views/*
+**/temp/*
+**/log/*
+Docker/**/dockerize-*.tar.gz
+docker-sync.yml
+docker-compose.override.yml

@@ -1,0 +1,4 @@
+{
+  "schemaVersion": 2,
+  "imageName": "mailhog/mailhog:v1.0.0"
+}

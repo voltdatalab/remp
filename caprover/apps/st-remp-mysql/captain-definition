@@ -1,0 +1,4 @@
+{
+  "schemaVersion": 2,
+  "imageName": "mysql:8.0"
+}
