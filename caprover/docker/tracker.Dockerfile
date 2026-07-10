@@ -12,5 +12,8 @@ RUN apk add --no-cache ca-certificates openssl tzdata
 WORKDIR /bin
 COPY --from=build /src/cmd/tracker/tracker /bin/tracker
 COPY Beam/go/cmd/tracker/.env.example /bin/.env.example
+# The binary requires a .env file at startup. CapRover environment variables
+# override these example defaults, so secrets remain outside the image.
+COPY Beam/go/cmd/tracker/.env.example /bin/.env
 EXPOSE 8081
 CMD ["/bin/tracker"]

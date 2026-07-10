@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - caprover/nucleo-staging
+      - caprover/nucleo-staging-ghcr-sha
       - master
     paths:
       - ".github/workflows/publish-ghcr.yml"
