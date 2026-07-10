@@ -1,4 +1,4 @@
 {
   "schemaVersion": 2,
-  "dockerfilePath": "./caprover/docker/nginx.Dockerfile"
+  "imageName": "ghcr.io/voltdatalab/remp-nginx:sha-c68f52c"
 }

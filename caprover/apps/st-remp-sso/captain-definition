@@ -1,4 +1,4 @@
 {
   "schemaVersion": 2,
-  "dockerfilePath": "./caprover/docker/sso.Dockerfile"
+  "imageName": "ghcr.io/voltdatalab/remp-sso:sha-c68f52c"
 }

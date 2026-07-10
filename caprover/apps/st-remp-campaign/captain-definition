@@ -1,4 +1,4 @@
 {
   "schemaVersion": 2,
-  "dockerfilePath": "./caprover/docker/campaign.Dockerfile"
+  "imageName": "ghcr.io/voltdatalab/remp-campaign:sha-c68f52c"
 }

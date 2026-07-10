@@ -1,4 +1,4 @@
 {
   "schemaVersion": 2,
-  "dockerfilePath": "./caprover/docker/segments.Dockerfile"
+  "imageName": "ghcr.io/voltdatalab/remp-segments:sha-c68f52c"
 }

@@ -1,4 +1,4 @@
 {
   "schemaVersion": 2,
-  "dockerfilePath": "./caprover/docker/beam.Dockerfile"
+  "imageName": "ghcr.io/voltdatalab/remp-beam:sha-c68f52c"
 }

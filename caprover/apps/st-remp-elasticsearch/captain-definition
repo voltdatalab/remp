@@ -1,4 +1,4 @@
 {
   "schemaVersion": 2,
-  "dockerfilePath": "./Docker/elasticsearch/Dockerfile"
+  "imageName": "ghcr.io/voltdatalab/remp-elasticsearch:sha-c68f52c"
 }

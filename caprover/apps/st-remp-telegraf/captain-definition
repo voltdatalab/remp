@@ -1,4 +1,4 @@
 {
   "schemaVersion": 2,
-  "dockerfilePath": "./Docker/telegraf/Dockerfile"
+  "imageName": "ghcr.io/voltdatalab/remp-telegraf:sha-c68f52c"
 }

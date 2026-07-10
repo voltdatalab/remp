@@ -1,4 +1,4 @@
 {
   "schemaVersion": 2,
-  "dockerfilePath": "./caprover/docker/mailer.Dockerfile"
+  "imageName": "ghcr.io/voltdatalab/remp-mailer:sha-c68f52c"
 }
