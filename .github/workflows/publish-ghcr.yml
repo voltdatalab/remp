@@ -1,0 +1,113 @@
+name: Publish CapRover container images
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - caprover/nucleo-staging
+      - master
+    paths:
+      - ".github/workflows/publish-ghcr.yml"
+      - "caprover/**"
+      - "Docker/elasticsearch/**"
+      - "Docker/telegraf/**"
+      - "Beam/**"
+      - "Campaign/**"
+      - "Mailer/**"
+      - "Sso/**"
+      - "Composer/**"
+      - "Package/**"
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: publish-ghcr-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  publish:
+    name: Build and publish ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: nginx
+            image: remp-nginx
+            context: .
+            dockerfile: caprover/docker/nginx.Dockerfile
+          - service: beam
+            image: remp-beam
+            context: .
+            dockerfile: caprover/docker/beam.Dockerfile
+          - service: campaign
+            image: remp-campaign
+            context: .
+            dockerfile: caprover/docker/campaign.Dockerfile
+          - service: mailer
+            image: remp-mailer
+            context: .
+            dockerfile: caprover/docker/mailer.Dockerfile
+          - service: sso
+            image: remp-sso
+            context: .
+            dockerfile: caprover/docker/sso.Dockerfile
+          - service: tracker
+            image: remp-tracker
+            context: .
+            dockerfile: caprover/docker/tracker.Dockerfile
+          - service: segments
+            image: remp-segments
+            context: .
+            dockerfile: caprover/docker/segments.Dockerfile
+          - service: elasticsearch
+            image: remp-elasticsearch
+            context: Docker/elasticsearch
+            dockerfile: Docker/elasticsearch/Dockerfile
+          - service: telegraf
+            image: remp-telegraf
+            context: Docker/telegraf
+            dockerfile: Docker/telegraf/Dockerfile
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ matrix.image }}
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=caprover-nucleo-staging,enable=${{ github.ref == 'refs/heads/caprover/nucleo-staging' }}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.description=REMP ${{ matrix.service }} image for CapRover deployment
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}

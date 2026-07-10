@@ -7,4 +7,4 @@ RUN apk add openssl
 
 ADD telegraf.conf /etc/telegraf/telegraf.conf
 
-CMD telegraf
+CMD ["telegraf"]

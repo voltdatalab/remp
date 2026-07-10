@@ -80,6 +80,43 @@ For Kafka:
 - `KAFKA_ADVERTISED_HOST_NAME=srv-captain--st-remp-kafka`
 - `KAFKA_CREATE_TOPICS=beam_events:1:1`
 
+## Publishing images to GitHub Container Registry
+
+The workflow `.github/workflows/publish-ghcr.yml` builds and pushes the custom CapRover images to GitHub Container Registry (`ghcr.io`) using the repository `GITHUB_TOKEN`.
+
+It runs manually via **Actions → Publish CapRover container images → Run workflow** and also on pushes to `caprover/nucleo-staging` or `master` that touch deployment-related files.
+
+Published custom images:
+
+| Service | GHCR image |
+|---|---|
+| nginx | `ghcr.io/voltdatalab/remp-nginx` |
+| Beam | `ghcr.io/voltdatalab/remp-beam` |
+| Campaign | `ghcr.io/voltdatalab/remp-campaign` |
+| Mailer | `ghcr.io/voltdatalab/remp-mailer` |
+| SSO | `ghcr.io/voltdatalab/remp-sso` |
+| Tracker | `ghcr.io/voltdatalab/remp-tracker` |
+| Segments | `ghcr.io/voltdatalab/remp-segments` |
+| Elasticsearch | `ghcr.io/voltdatalab/remp-elasticsearch` |
+| Telegraf | `ghcr.io/voltdatalab/remp-telegraf` |
+
+Tags:
+
+- `sha-<commit>` for every build; safest tag for reproducible CapRover deploys.
+- `caprover-nucleo-staging` when built from branch `caprover/nucleo-staging`.
+- `latest` when built from branch `master`.
+
+If switching CapRover from source builds to prebuilt images, update each `captain-definition` from `dockerfilePath` to `imageName`, for example:
+
+```json
+{
+  "schemaVersion": 2,
+  "imageName": "ghcr.io/voltdatalab/remp-beam:sha-<commit>"
+}
+```
+
+For private GHCR packages, CapRover must have a valid registry read credential. For this public fork/staging POC, prefer public GHCR packages as long as no secrets are baked into images.
+
 ## Open risks before deploy
 
 - The upstream project is compose/dev-oriented. This branch removes bind-mount assumptions, but full runtime validation still requires a protected CapRover staging deployment.
