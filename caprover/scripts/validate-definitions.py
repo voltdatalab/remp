@@ -25,6 +25,7 @@ data = json.loads(scheduler.read_text())
 lines = "\n".join(data["dockerfileLines"])
 assert "ghcr.io/voltdatalab/remp-beam:sha-" in lines, "scheduler must pin an immutable Beam image"
 assert "schedule:work" in lines, "scheduler must execute Laravel schedule:work"
+assert ".env.example" in lines and "cp .env.example .env" in lines, "scheduler must initialize the same fallback env as the Beam web entrypoint"
 assert "latest" not in lines, "scheduler must not use a mutable image tag"
 print(f"validated_captain_definitions={len(definitions)}")
 print("beam_scheduler_contract=ok")
