@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 2,
+  "dockerfileLines": [
+    "FROM ghcr.io/voltdatalab/remp-beam:sha-c68f52c",
+    "WORKDIR /var/www/html/Beam",
+    "CMD [\"php\", \"artisan\", \"schedule:work\", \"--verbose\", \"--no-interaction\"]"
+  ]
+}

@@ -15,6 +15,7 @@ This directory contains the first-pass CapRover adaptation for evaluating `remp2
 |---|---|---:|---|
 | `st-remp-nginx` | `caprover/apps/st-remp-nginx/captain-definition` | yes, protected | Edge router for the REMP UI hostnames. Set Container HTTP Port `80`. |
 | `st-remp-beam` | `caprover/apps/st-remp-beam/captain-definition` | no | PHP-FPM for Beam. |
+| `st-remp-beam-scheduler` | `caprover/apps/st-remp-beam-scheduler/captain-definition` | no | Runs `php artisan schedule:work` from the exact Beam image pinned for staging; required for pageview/timespent aggregation, dashboard snapshots, and scheduled segment jobs. Mirror the Beam runtime env vars, keep one instance, and never expose it publicly. |
 | `st-remp-campaign` | `caprover/apps/st-remp-campaign/captain-definition` | no | PHP-FPM for Campaign. |
 | `st-remp-mailer` | `caprover/apps/st-remp-mailer/captain-definition` | no | PHP-FPM for Mailer. Use Mailhog in POC. |
 | `st-remp-sso` | `caprover/apps/st-remp-sso/captain-definition` | no/limited | PHP-FPM for SSO. |
