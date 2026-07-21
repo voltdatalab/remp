@@ -1,0 +1,30 @@
+name: Validate CapRover definitions
+
+on:
+  pull_request:
+    paths:
+      - "caprover/**"
+      - ".github/workflows/validate-caprover.yml"
+  push:
+    branches:
+      - caprover/nucleo-staging-ghcr-sha
+    paths:
+      - "caprover/**"
+      - ".github/workflows/validate-caprover.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Validate Captain definitions
+        run: python3 caprover/scripts/validate-definitions.py
+      - name: Validate shell entrypoints
+        run: |
+          for script in caprover/scripts/*.sh; do
+            bash -n "$script"
+          done
