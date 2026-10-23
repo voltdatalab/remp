@@ -26,8 +26,11 @@ data = json.loads(scheduler.read_text())
 lines = data["dockerfileLines"]
 assert re.fullmatch(r"FROM ghcr\.io/voltdatalab/remp-beam@sha256:[0-9a-f]{64}", lines[0]), "scheduler must pin the exact Beam repository by SHA-256 digest"
 assert lines[1:] == [
+    "RUN apt-get update && apt-get install -y --no-install-recommends tini && test -x /usr/bin/tini && tini --version && dpkg-query -W -f='REMP_SCHEDULER_TINI_VERSION=${Package} ${Version}\\n' tini && php -r 'exit(PHP_VERSION_ID === 80427 && ini_get(\"session.upload_progress.enabled\") === \"0\" ? 0 : 1);' && php-fpm --test && rm -rf /var/lib/apt/lists/* && printf 'REMP_SCHEDULER_BUILD_OK\\n'",
     "WORKDIR /var/www/html/Beam",
+    'ENTRYPOINT ["/usr/bin/tini", "-g", "--"]',
+    "STOPSIGNAL SIGTERM",
     'CMD ["sh", "-lc", "if [ ! -f .env ] && [ -f .env.example ]; then cp .env.example .env; fi; exec php artisan schedule:work --verbose --no-interaction"]',
-], "scheduler must preserve the exact WORKDIR and CMD without extra instructions"
+], "scheduler requires only tini installation with build assertions, group-forwarding ENTRYPOINT, SIGTERM stop signal, and the original WORKDIR/CMD"
 print(f"validated_captain_definitions={len(definitions)}")
 print("beam_scheduler_contract=ok")
