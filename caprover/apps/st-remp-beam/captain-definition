@@ -1,4 +1,4 @@
 {
   "schemaVersion": 2,
-  "imageName": "ghcr.io/voltdatalab/remp-beam:sha-c68f52c"
+  "imageName": "ghcr.io/voltdatalab/remp-beam@sha256:6f0b63300a694ec157271f9d10fb3b9deddf1c7f67fc1954f3368cbb3bc3d8ea"
 }

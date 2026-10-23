@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 from pathlib import Path
+import re
 
 ROOT = Path(__file__).resolve().parents[2]
 definitions = sorted((ROOT / "caprover" / "apps").glob("*/captain-definition"))
@@ -22,10 +23,11 @@ for path in definitions:
 
 scheduler = ROOT / "caprover" / "apps" / "st-remp-beam-scheduler" / "captain-definition"
 data = json.loads(scheduler.read_text())
-lines = "\n".join(data["dockerfileLines"])
-assert "ghcr.io/voltdatalab/remp-beam:sha-" in lines, "scheduler must pin an immutable Beam image"
-assert "schedule:work" in lines, "scheduler must execute Laravel schedule:work"
-assert ".env.example" in lines and "cp .env.example .env" in lines, "scheduler must initialize the same fallback env as the Beam web entrypoint"
-assert "latest" not in lines, "scheduler must not use a mutable image tag"
+lines = data["dockerfileLines"]
+assert re.fullmatch(r"FROM ghcr\.io/voltdatalab/remp-beam@sha256:[0-9a-f]{64}", lines[0]), "scheduler must pin the exact Beam repository by SHA-256 digest"
+assert lines[1:] == [
+    "WORKDIR /var/www/html/Beam",
+    'CMD ["sh", "-lc", "if [ ! -f .env ] && [ -f .env.example ]; then cp .env.example .env; fi; exec php artisan schedule:work --verbose --no-interaction"]',
+], "scheduler must preserve the exact WORKDIR and CMD without extra instructions"
 print(f"validated_captain_definitions={len(definitions)}")
 print("beam_scheduler_contract=ok")

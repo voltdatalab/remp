@@ -1,4 +1,4 @@
 {
   "schemaVersion": 2,
-  "imageName": "ghcr.io/voltdatalab/remp-nginx:sha-47eea4e"
+  "imageName": "ghcr.io/voltdatalab/remp-nginx@sha256:2df9a08b83dddb18f6f70a26be27e9c4d0f47f67f06b78e09119704f10a4f1ad"
 }
