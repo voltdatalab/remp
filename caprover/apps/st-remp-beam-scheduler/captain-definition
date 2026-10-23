@@ -2,7 +2,10 @@
   "schemaVersion": 2,
   "dockerfileLines": [
     "FROM ghcr.io/voltdatalab/remp-beam@sha256:6f0b63300a694ec157271f9d10fb3b9deddf1c7f67fc1954f3368cbb3bc3d8ea",
+    "RUN apt-get update && apt-get install -y --no-install-recommends tini && test -x /usr/bin/tini && tini --version && dpkg-query -W -f='REMP_SCHEDULER_TINI_VERSION=${Package} ${Version}\\n' tini && php -r 'exit(PHP_VERSION_ID === 80427 && ini_get(\"session.upload_progress.enabled\") === \"0\" ? 0 : 1);' && php-fpm --test && rm -rf /var/lib/apt/lists/* && printf 'REMP_SCHEDULER_BUILD_OK\\n'",
     "WORKDIR /var/www/html/Beam",
+    "ENTRYPOINT [\"/usr/bin/tini\", \"-g\", \"--\"]",
+    "STOPSIGNAL SIGTERM",
     "CMD [\"sh\", \"-lc\", \"if [ ! -f .env ] && [ -f .env.example ]; then cp .env.example .env; fi; exec php artisan schedule:work --verbose --no-interaction\"]"
   ]
 }

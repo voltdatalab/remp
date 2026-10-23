@@ -12,7 +12,10 @@ ROOT = Path(__file__).resolve().parents[2]
 # Deliberately synthetic: only used inside disposable fixture Captain definitions.
 BASE = "FROM ghcr.io/voltdatalab/remp-beam@sha256:" + "a" * 64
 COMMAND = [
+    "RUN apt-get update && apt-get install -y --no-install-recommends tini && test -x /usr/bin/tini && tini --version && dpkg-query -W -f='REMP_SCHEDULER_TINI_VERSION=${Package} ${Version}\\n' tini && php -r 'exit(PHP_VERSION_ID === 80427 && ini_get(\"session.upload_progress.enabled\") === \"0\" ? 0 : 1);' && php-fpm --test && rm -rf /var/lib/apt/lists/* && printf 'REMP_SCHEDULER_BUILD_OK\\n'",
     "WORKDIR /var/www/html/Beam",
+    'ENTRYPOINT ["/usr/bin/tini", "-g", "--"]',
+    "STOPSIGNAL SIGTERM",
     'CMD ["sh", "-lc", "if [ ! -f .env ] && [ -f .env.example ]; then cp .env.example .env; fi; exec php artisan schedule:work --verbose --no-interaction"]',
 ]
 
@@ -50,6 +53,45 @@ class ValidateDefinitionsTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0, result.stdout)
         self.assertNotIn("beam_scheduler_contract=ok", result.stdout)
 
+    def test_03_rejects_scheduler_without_reaper(self):
+        result = self.run_validator([BASE, COMMAND[1], COMMAND[-1]])
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertNotIn("beam_scheduler_contract=ok", result.stdout)
+
+    def test_04_rejects_missing_wrong_or_duplicate_stop_signal(self):
+        self.assert_positive_control()
+        for replacement in [[], ["STOPSIGNAL SIGQUIT"], ["STOPSIGNAL SIGTERM", "STOPSIGNAL SIGTERM"]]:
+            with self.subTest(replacement=replacement):
+                result = self.run_validator([BASE, *COMMAND[:3], *replacement, COMMAND[-1]])
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+
+    def test_05_rejects_missing_or_weakened_build_assertions(self):
+        self.assert_positive_control()
+        for fragment in ["test -x /usr/bin/tini && ", "tini --version && ",
+                         "dpkg-query -W -f='REMP_SCHEDULER_TINI_VERSION=${Package} ${Version}\\n' tini && ",
+                         "php-fpm --test && ", "PHP_VERSION_ID === 80427 && "]:
+            with self.subTest(fragment=fragment):
+                self.assertIn(fragment, COMMAND[0])
+                result = self.run_validator([BASE, COMMAND[0].replace(fragment, ""), *COMMAND[1:]])
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+        for old, new in [('=== "0"', '=== "1"'), ["? 0 : 1", "? 0 : 0"],
+                         ["--no-install-recommends tini", "--no-install-recommends tini curl"]]:
+            with self.subTest(replacement=new):
+                self.assertIn(old, COMMAND[0])
+                result = self.run_validator([BASE, COMMAND[0].replace(old, new), *COMMAND[1:]])
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+
+    def test_06_rejects_missing_or_misplaced_execution_markers(self):
+        self.assert_positive_control()
+        for old, new in [(" && printf 'REMP_SCHEDULER_BUILD_OK\\n'", ""),
+                         ("REMP_SCHEDULER_TINI_VERSION=", ""),
+                         ("php-fpm --test", "printf 'REMP_SCHEDULER_BUILD_OK\\n'"),
+                         (" && printf 'REMP_SCHEDULER_BUILD_OK\\n'", "; printf 'REMP_SCHEDULER_BUILD_OK\\n'")]:
+            with self.subTest(replacement=new):
+                self.assertIn(old, COMMAND[0])
+                result = self.run_validator([BASE, COMMAND[0].replace(old, new), *COMMAND[1:]])
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+
     def test_02_rejects_invalid_contracts_after_positive_control(self):
         # Do not interpret negative results from an invalid positive fixture.
         self.assert_positive_control()
@@ -59,8 +101,14 @@ class ValidateDefinitionsTests(unittest.TestCase):
             "arbitrary_repository": [BASE.replace("voltdatalab/remp-beam", "other/remp-beam"), *COMMAND],
             "branch_tag": ["FROM ghcr.io/voltdatalab/remp-beam:fix/remp-php-security-20261023", *COMMAND],
             "latest_tag": ["FROM ghcr.io/voltdatalab/remp-beam:latest", *COMMAND],
-            "changed_cmd": [BASE, COMMAND[0], COMMAND[1].replace("--verbose", "--quiet")],
-            "changed_workdir": [BASE, "WORKDIR /var/www/html", COMMAND[1]],
+            "changed_cmd": [BASE, *COMMAND[:-1], COMMAND[-1].replace("--verbose", "--quiet")],
+            "changed_workdir": [BASE, COMMAND[0], "WORKDIR /var/www/html", *COMMAND[2:]],
+            "missing_install": [BASE, *COMMAND[1:]],
+            "missing_entrypoint": [BASE, *COMMAND[:2], *COMMAND[3:]],
+            "missing_group_forwarding": [BASE, *COMMAND[:2], 'ENTRYPOINT ["/usr/bin/tini", "--"]', *COMMAND[3:]],
+            "missing_separator": [BASE, *COMMAND[:2], 'ENTRYPOINT ["/usr/bin/tini", "-g"]', *COMMAND[3:]],
+            "inherited_entrypoint": [BASE, *COMMAND[:2], 'ENTRYPOINT ["docker-php-entrypoint"]', *COMMAND[3:]],
+            "extra_instruction": [BASE, *COMMAND, "ENV REMP_RUN_MIGRATIONS=true"],
             "extra_from": [BASE, *COMMAND, "FROM alpine:3.22"],
         }
         for name, lines in cases.items():

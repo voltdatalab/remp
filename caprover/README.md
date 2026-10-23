@@ -118,6 +118,16 @@ If switching CapRover from source builds to prebuilt images, update each `captai
 
 For private GHCR packages, CapRover must have a valid registry read credential. For this public fork/staging POC, prefer public GHCR packages as long as no secrets are baked into images.
 
+## Beam scheduler init contract
+
+The scheduler alone installs tini and uses `ENTRYPOINT ["/usr/bin/tini", "-g", "--"]`
+with `STOPSIGNAL SIGTERM` (overriding the PHP-FPM base's SIGQUIT), while preserving
+its pinned Beam base and original CMD. The same apt RUN checks tini's executable,
+version/package and inherited PHP/INI/FPM configuration. See
+[SCHEDULER-REAPING.md](SCHEDULER-REAPING.md) for the versioned upstream diagnosis,
+entrypoint inheritance, offline gates and required OS/image/canary acceptance.
+Other PHP images, backend entrypoints and PHP security gates are unchanged.
+
 ## Open risks before deploy
 
 - The upstream project is compose/dev-oriented. This branch removes bind-mount assumptions, but full runtime validation still requires a protected CapRover staging deployment.
