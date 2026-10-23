@@ -1,6 +1,10 @@
 FROM mysql:8.0 AS mysql_client_stage
 
-FROM php:8.4.19-fpm
+FROM php:8.4.27-fpm
+
+COPY security.ini /usr/local/etc/php/conf.d/zz-remp-security.ini
+RUN php -r 'exit(PHP_VERSION_ID === 80427 && ini_get("session.upload_progress.enabled") === "0" ? 0 : 1);' \
+    && php-fpm --test
 
 # ADD NON-ROOT USER; IF THE VARIABLES ARE NOT SET, DOCKER COMPOSE DEFAULTS TO 1000:1000 "docker"
 
