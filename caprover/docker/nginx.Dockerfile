@@ -1,4 +1,4 @@
-FROM php:8.4.19-cli AS beam_assets
+FROM php:8.4.27-cli AS beam_assets
 
 ENV COMPOSER_ALLOW_SUPERUSER=1 \
     COMPOSER_HOME=/composer \

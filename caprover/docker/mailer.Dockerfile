@@ -1,6 +1,10 @@
 FROM mysql:8.0 AS mysql_client_stage
 
-FROM php:8.4.19-fpm
+FROM php:8.4.27-fpm
+
+COPY Docker/php/security.ini /usr/local/etc/php/conf.d/zz-remp-security.ini
+RUN php -r 'exit(PHP_VERSION_ID === 80427 && ini_get("session.upload_progress.enabled") === "0" ? 0 : 1);' \
+    && php-fpm --test
 
 ARG APP_NAME=Mailer
 ENV APP_NAME=${APP_NAME} \
