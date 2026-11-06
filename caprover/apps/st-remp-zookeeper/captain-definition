@@ -1,4 +1,4 @@
 {
   "schemaVersion": 2,
-  "imageName": "wurstmeister/zookeeper"
+  "dockerfilePath": "./caprover/docker/zookeeper.Dockerfile"
 }
