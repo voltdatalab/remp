@@ -1,4 +1,4 @@
 {
   "schemaVersion": 2,
-  "imageName": "wurstmeister/zookeeper"
+  "imageName": "wurstmeister/zookeeper@sha256:7a7fd44a72104bfbd24a77844bad5fabc86485b036f988ea927d1780782a6680"
 }
