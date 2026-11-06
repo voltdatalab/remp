@@ -20,7 +20,8 @@ From the repository root:
 DOCKER_BUILDKIT=0 docker build --pull=false --network none \
   --memory 512m --memory-swap 512m --cpu-period 100000 --cpu-quota 100000 \
   -t nucleo-local/zookeeper-no-ssh:20261106 \
-  -f caprover/docker/zookeeper.Dockerfile .
+  -f caprover/apps/st-remp-zookeeper/Dockerfile \
+  caprover/apps/st-remp-zookeeper
 python3 -B caprover/scripts/validate-definitions.py
 python3 -B caprover/scripts/test-zookeeper-contract.py
 ```
@@ -72,6 +73,12 @@ captain-definition location. This candidate changes its source from a floating
 imageName to dockerfilePath in this repository. It causes CapRover to build the
 small derivative from the pinned parent; it does not use a CLI/tarball deploy or
 require publishing a separate registry image.
+
+The installed native loader resolves dockerfilePath AND the Docker build context
+relative to the directory containing captain-definition, not the repository root.
+Keep Dockerfile and its COPY source beside this app's definition. Parent-directory
+dockerfilePath traversal is explicitly rejected by the native loader. The contract
+tests cover this layout; root-context-only builds do not qualify Method 3 paths.
 
 Before a separately approved reversible branch swap:
 

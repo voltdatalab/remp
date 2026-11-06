@@ -2,12 +2,16 @@
 """Offline contract checks; integration remains an explicit separate opt-in."""
 import json,pathlib,subprocess,unittest
 ROOT=pathlib.Path(__file__).resolve().parents[2]
-DOCKERFILE=ROOT/'caprover/docker/zookeeper.Dockerfile'
-ENTRY=ROOT/'caprover/scripts/zookeeper-entrypoint.sh'
 DEF=ROOT/'caprover/apps/st-remp-zookeeper/captain-definition'
+DOCKERFILE=DEF.parent/'Dockerfile'
+ENTRY=DEF.parent/'zookeeper-entrypoint.sh'
 class Contract(unittest.TestCase):
  def test_method3_definition_builds_repo_file(self):
-  d=json.loads(DEF.read_text());self.assertEqual(d,{'schemaVersion':2,'dockerfilePath':'./caprover/docker/zookeeper.Dockerfile'});self.assertTrue((ROOT/d['dockerfilePath']).is_file())
+  d=json.loads(DEF.read_text());self.assertEqual(d,{'schemaVersion':2,'dockerfilePath':'./Dockerfile'});self.assertEqual((DEF.parent/d['dockerfilePath']).resolve(),DOCKERFILE.resolve());self.assertTrue(DOCKERFILE.is_file())
+ def test_native_build_context_contains_copy_source(self):
+  self.assertIn('COPY zookeeper-entrypoint.sh /usr/local/bin/remp-zookeeper-entrypoint.sh',DOCKERFILE.read_text());self.assertEqual(ENTRY.parent,DEF.parent);self.assertTrue(ENTRY.is_file())
+ def test_repo_root_path_is_not_a_native_relative_dockerfile(self):
+  self.assertFalse((DEF.parent/'caprover/docker/zookeeper.Dockerfile').is_file())
  def test_parent_pinned_to_audited_digest(self):
   self.assertIn('FROM wurstmeister/zookeeper@sha256:7a7fd44a72104bfbd24a77844bad5fabc86485b036f988ea927d1780782a6680',DOCKERFILE.read_text())
  def test_startup_parent_bytes_guarded(self):
